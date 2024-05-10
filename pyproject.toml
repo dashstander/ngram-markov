@@ -1,0 +1,40 @@
+[project]
+name = "ngram-markov"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Dashiell Stander", email = "dash.stander@gmail.com" }
+]
+dependencies = [
+    "numpy>=1.24.4",
+    "ipykernel>=6.29.4",
+    "jupyter>=1.0.0",
+    "jupyterlab>=4.1.6",
+    "tqdm>=4.66.2",
+    "plotly>=5.21.0",
+    "polars>=0.20.22",
+    "plotnine>=0.12.4",
+    "scipy>=1.10.1",
+    "transformer_lens>=1.15.0",
+    "torch>=2.3.0",
+    "zstandard>=0.22.0",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[project.scripts]
+hello = "ngram_markov:hello"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ngram_markov"]
