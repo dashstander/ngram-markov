@@ -39,7 +39,7 @@ import ftfy
 
 #from megatron.tokenizer import build_tokenizer
 from tokenizers import AutoTokenizer
-from megatron.data import indexed_dataset
+from ngram_markov.indexed_dataset import make_builder
 from threading import Semaphore
 
 
@@ -49,7 +49,7 @@ class Encoder(object):
 
     def initializer(self):
         # Use Encoder class as a container for global data
-        Encoder.tokenizer = build_tokenizer(self.args)
+        Encoder.tokenizer = AutoTokenizer.from_pretrained('gpt-2')
 
     def encode(self, text):
         if self.args.ftfy:
@@ -206,7 +206,7 @@ def main(input_args=None):
         output_idx_files[key] = "{}_{}_{}.idx".format(
             args.output_prefix, key, "document"
         )
-        builders[key] = indexed_dataset.make_builder(
+        builders[key] = make_builder(
             output_bin_files[key],
             impl=args.dataset_impl,
             vocab_size=tokenizer.vocab_size,
