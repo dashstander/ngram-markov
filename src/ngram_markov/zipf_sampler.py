@@ -1,6 +1,9 @@
 from functools import partial
 from collections import deque
 import numpy as np
+import torch
+from torch.utils.data import IterableDataset
+
 
 
 def vocab_to_idx_generator(n_vocab, *indices):
@@ -61,7 +64,7 @@ class NgramSampler:
 
     def sample(self):
         if len(self._state) < (self.n - 1):
-            a = self.rng.choice(self.num_states, p=self.unigram_probs)
+            a = self.rng.choice(self.num_vocab, p=self.unigram_probs)
             self._state.append(a)
             return a
         else:
@@ -70,3 +73,31 @@ class NgramSampler:
             self._state.append(a)
             self._state.popleft()
             return a
+        
+
+
+class NgramDataset(IterableDataset):
+    def __init__(self, num_vocab, n, zipf_alpha, seq_len, seed, worker_id=None):
+        super().__init__()
+        self.num_vocab = num_vocab
+        self.n = n
+        self.zipf_alpha = zipf_alpha
+        self.seq_len = seq_len
+        self.worker_id = worker_id
+        self.seed = seed
+
+    def __iter__(self):
+        worker_info = torch.utils.data.get_worker_info()
+        if worker_info is None:
+            # Single-process data loading
+            rng = np.random.default_rng(self.seed)
+        else:
+            # Multi-process data loading
+            worker_id = worker_info.id
+            rng = np.random.default_rng(self.seed + worker_id)
+
+        sampler = NgramSampler.sample_zipfian_distribution(self.num_vocab, self.n, self.zipf_alpha, rng)
+        while True:
+            sequence = [self.num_vocab] + [sampler.sample() for _ in range(self.seq_len)]
+            sampler.clear_state()
+            yield torch.tensor(sequence, dtype=torch.long)

@@ -18,6 +18,10 @@ dependencies = [
     "transformer_lens>=1.15.0",
     "torch>=2.3.0",
     "zstandard>=0.22.0",
+    "pytest>=8.2.0",
+    "transformers>=4.40.2",
+    "datasets>=2.19.1",
+    "tokengrams @ file:///Users/dashiell/workspace/ngram-markov/../tokengrams",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
