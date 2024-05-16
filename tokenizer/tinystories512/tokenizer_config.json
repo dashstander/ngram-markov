@@ -10,14 +10,6 @@
       "rstrip": false,
       "single_word": false,
       "special": true
-    },
-    "1": {
-      "content": "<|padding|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false,
-      "special": true
     }
   },
   "bos_token": "<|endoftext|>",

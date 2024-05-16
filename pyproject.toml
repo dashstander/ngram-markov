@@ -21,7 +21,7 @@ dependencies = [
     "pytest>=8.2.0",
     "transformers>=4.40.2",
     "datasets>=2.19.1",
-    "tokengrams @ file:///home/dashiell/workspace/ngram-markov/../tokengrams",
+    "tokengrams @ file:///home/dashiell/workspace/tokengrams",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
