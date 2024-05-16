@@ -136,6 +136,7 @@ rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rich==13.7.1
 rpds-py==0.18.0
+rustworkx==0.14.2
 safetensors==0.4.3
 scipy==1.13.0
 send2trash==1.8.3
