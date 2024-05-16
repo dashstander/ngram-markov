@@ -1,34 +1,14 @@
 
-
 from concurrent.futures import ThreadPoolExecutor
-from einops._torch_specific import allow_ops_in_compiled_graph  # requires einops>=0.6.1
-import s3fs 
 from tqdm import trange
 import torch
-from torch.nn.functional import log_softmax
 from torch.nn.utils import clip_grad_norm_
 from transformer_lens import HookedTransformerConfig, HookedTransformer
-from transformer_lens.utils import lm_accuracy, lm_cross_entropy_loss
+from transformer_lens.utils import lm_cross_entropy_loss
 import wandb
 
-from ngram_markov.sampler import NgramSampler
 
 torch.set_float32_matmul_precision('high')
-allow_ops_in_compiled_graph()
-fs = s3fs.S3FileSystem()
-
-
-def save_to_s3(weights, optimizer, config, rng, bucket, step):
-    with fs.open(f'{bucket}/{step}.pth', mode='wb') as file:
-        torch.save(
-            {
-                'model': weights,
-                'optimizer': optimizer, 
-                'config': config,
-                'rng': rng
-            }, 
-            file
-        )
 
 
 @torch.no_grad()
@@ -37,8 +17,8 @@ def do_validation(model, group):
     data, labels = [tensor.to('cuda') for tensor in group.generate()]
     #even_inds = torch.arange(2, data.shape[1], 2).to('cuda:0')
     logits = model(data, return_type='logits')
-    loss = seq2seq_cross_entropy_loss(logits, labels)
-    acc = seq2seq_accuracy(logits, labels)
+    #loss = seq2seq_cross_entropy_loss(logits, labels)
+    #acc = seq2seq_accuracy(logits, labels)
     valid_msg[f'loss/validation'] = loss.item()
     valid_msg[f'accuracy/validation'] = acc.item()
     return valid_msg
@@ -56,7 +36,7 @@ def train(model, optimizer, scheduler, config, num_steps, group, bucket):
             data, labels = [tensor.to('cuda') for tensor in group.generate()]
             optimizer.zero_grad()
             logits = model(data, return_type='logits')
-            loss = lm_c(logits, labels)
+            loss = lm_cross_entropy_loss(logits, labels)
             loss.backward()
             clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
@@ -72,31 +52,11 @@ def train(model, optimizer, scheduler, config, num_steps, group, bucket):
                 t.set_postfix(loss=loss.item())
             
             wandb.log(msg)
-            if i % 100 == 0:
-                executor.submit(
-                    save_to_s3,
-                    model.state_dict(),
-                    optimizer.state_dict(),
-                    config,
-                    torch.random.get_rng_state(),
-                    bucket,
-                    i
-                )
-    save_to_s3(
-        model.state_dict(),
-        optimizer.state_dict(),
-        config,
-        torch.random.get_rng_state(),
-        bucket,
-        i
-    )
+  
             
 
 
 def main(_):
-
-    
-
     N = 2
     layers = 4
     context = 64
@@ -118,12 +78,10 @@ def main(_):
     }
     num_steps = 20_000
 
-    wandb.init(config=cfg, entity='dstander', project='transformer-parities-seq2seq')
+    wandb.init(config=cfg, entity='dstander', project='transformer-ngrams-tinystories')
 
     torch.manual_seed(seed)
-
-    wandb.init(config=cfg, entity='dstander', project='transformer-parity-seq2seq')
-
+    
     config = HookedTransformerConfig(**cfg)
     model = HookedTransformer(config)
     optimizer = torch.optim.AdamW(model.parameters(), lr=0.0001, weight_decay=0.01)
