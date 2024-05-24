@@ -1,0 +1,3 @@
+[submodule "tokengrams"]
+	path = tokengrams
+	url = git@github.com:dashstander/tokengrams.git
