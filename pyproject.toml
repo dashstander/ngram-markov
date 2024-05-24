@@ -23,7 +23,7 @@ dependencies = [
     "datasets>=2.19.1",
     "rustworkx>=0.14.2",
     "pybind11>=2.12.0",
-    "tokengrams @ file:///Users/dashiell/workspace/ngram-markov/tokengrams",
+    "tokengrams @ git+https://github.com/dashstander/tokengrams.git",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -38,6 +38,10 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed = true
 dev-dependencies = []
+
+[tool.rye.workspace]
+members = ["ngram-markov*"]
+
 
 [tool.hatch.metadata]
 allow-direct-references = true
