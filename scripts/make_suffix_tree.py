@@ -16,7 +16,7 @@ if __name__ == '__main__':
     index_path = index_dir / 'suffix_tree.idx'
     print(f'Writing suffix tree to {index_path}')
     index = MemmapIndex.build(
-        tokens_path,
-        index_path,
+        str(tokens_path),
+        str(index_path),
         verbose=True
     )
