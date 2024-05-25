@@ -3,6 +3,7 @@
 # https://github.com/HazyResearch/flash-attention/blob/main/training/src/datamodules/language_modeling_hf.py
 
 import os
+from pathlib import Path
 from tqdm import tqdm
 import numpy as np
 from datasets import load_dataset # huggingface datasets
@@ -55,10 +56,13 @@ if __name__ == '__main__':
         num_proc=num_proc,
     )
 
+    save_dir = Path('data/tinystories')
+
     # concatenate all the ids in each dataset into one large file we can use for training
     for split, dset in tokenized.items():
         arr_len = np.sum(dset['len'], dtype=np.uint64)
-        filename = os.path.join(os.path.dirname(__file__), f'{split}.bin')
+        
+        filename = save_dir / f'{split}.bin'
         dtype = np.uint16 # (can do since enc.max_token_value == 50256 is < 2**16)
         arr = np.memmap(filename, dtype=dtype, mode='w+', shape=(arr_len,))
         total_batches = 1024
