@@ -57,6 +57,7 @@ if __name__ == '__main__':
     )
 
     save_dir = Path('data/tinystories')
+    save_dir.mkdir(parents=True, exist_ok=True)
 
     # concatenate all the ids in each dataset into one large file we can use for training
     for split, dset in tokenized.items():
