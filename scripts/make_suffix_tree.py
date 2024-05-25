@@ -4,8 +4,8 @@ from argparse import ArgumentParser
 
 
 parser = ArgumentParser()
-parser.add_argument('--data-path', type='str', required=True)
-parser.add_argument('--output-dir', type='str', required=True)
+parser.add_argument('--data-path', type=str, required=True)
+parser.add_argument('--output-dir', type=str, required=True)
 
 
 if __name__ == '__main__':
