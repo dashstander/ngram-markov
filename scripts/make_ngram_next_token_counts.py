@@ -64,9 +64,8 @@ def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
 
 def main(args):
     max_n = args.ngram
-    suffix_index = MemmapIndex(args.tokens_path, args.suffix_tree_path)
-    output_dir = Path(args.suffix_tree_path) / 'ngram'
-    output_dir.mkdir(exist_ok=True)
+    data_dir = Path(args.suffix_tree_path)
+    suffix_index = MemmapIndex(args.tokens_path, data_dir / 'suffix_tree.idx')
 
     num_tokens = args.num_tokens
     max_token = num_tokens - 1
@@ -78,8 +77,8 @@ def main(args):
         dtype=np.float32
     )
     unigram_counts = bigram_counts.sum(axis=0)
-    np.savez(output_dir / '1grams.npz', unigram_counts)
-    np.savez(output_dir / '2grams.npz', bigram_counts)
+    np.savez(data_dir / '1grams.npz', unigram_counts)
+    np.savez(data_dir / '2grams.npz', bigram_counts)
     curr_mat = bigram_counts
     curr_n = 2
     while curr_n < max_n:
@@ -87,7 +86,7 @@ def main(args):
         print(f'Querying for {curr_n}-gram counts...')
         curr_mat = get_ngram_counts(curr_mat, curr_n, num_tokens)
         print(f'Writing {curr_n}-gram matrix...')
-        np.savez(output_dir / f'{curr_n}grams.npz', curr_mat)
+        np.savez(data_dir / f'{curr_n}grams.npz', curr_mat)
 
 
 if __name__ == '__main__':
