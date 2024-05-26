@@ -84,7 +84,7 @@ def main(args):
     while curr_n < max_n:
         curr_n += 1
         print(f'Querying for {curr_n}-gram counts...')
-        curr_mat = get_ngram_counts(curr_mat, curr_n, num_tokens)
+        curr_mat = get_ngram_counts(suffix_index, curr_mat, curr_n, num_tokens)
         print(f'Writing {curr_n}-gram matrix...')
         np.savez(data_dir / f'{curr_n}grams.npz', curr_mat)
 
