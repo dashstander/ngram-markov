@@ -65,7 +65,7 @@ def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
 def main(args):
     max_n = args.ngram
     data_dir = Path(args.suffix_tree_path)
-    suffix_index = MemmapIndex(args.tokens_path, data_dir / 'suffix_tree.idx')
+    suffix_index = MemmapIndex(args.tokens_path, str(data_dir / 'suffix_tree.idx'))
 
     num_tokens = args.num_tokens
     max_token = num_tokens - 1
