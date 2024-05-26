@@ -37,7 +37,7 @@ def get_index_queries(prev_queries, prev_inds, counts):
     for i, query in zip(prev_inds, prev_queries):
         _, nonzero_cols = counts[[i], :].nonzero()
         queries.extend([
-            [deepcopy(query) + j] for j in nonzero_cols.tolist()
+            deepcopy(query) + [j] for j in nonzero_cols.tolist()
         ])
     return queries
 
