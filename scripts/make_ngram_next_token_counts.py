@@ -57,12 +57,12 @@ def _add_rows_to_tree(suffix_tree, queries, num_tokens, matrix):
     raw_ngram_counts = suffix_tree.batch_count_next(queries, num_tokens - 1)
     for query, ngram_row in zip(queries, raw_ngram_counts):
         idx = q2i_fn(query)
-        matrix.append_row(np.array(ngram_row, dtype=np.float32), idx)
+        matrix.append_row(np.array(ngram_row, dtype=np.float64), idx)
 
 
 def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
     index_to_tokens_fn = partial(int_to_base_x, num_tokens, n - 2)
-    count_matrix = IncrementalCSRMatrix((num_tokens**(n-1), num_tokens), np.float32)
+    count_matrix = IncrementalCSRMatrix((num_tokens**(n-1), num_tokens), np.float64)
 
     nonzero_prev_inds = np.argwhere(prev_counts.sum(axis=1) != 0).squeeze().tolist()
     nonzero_prev_grams = [index_to_tokens_fn(i) for i in nonzero_prev_inds]
