@@ -1,5 +1,5 @@
 import array
-from scipy.sparse import csr_array
+import scipy.sparse as sp
 
 import array
 import numpy as np
@@ -7,7 +7,7 @@ import numpy as np
 
 class IncrementalCSRMatrix:
 
-    def __init__(self, shape, dtype):
+    def __init__(self, shape, dtype, index_dtype=np.float32):
 
         if dtype is np.int32:
             type_flag = 'i'
@@ -19,11 +19,20 @@ class IncrementalCSRMatrix:
             type_flag = 'd'
         else:
             raise Exception('Dtype not supported.')
+        
+        if index_dtype is np.int32:
+            index_type = 'i'
+        elif index_dtype is np.int64:
+            index_type = 'l'
+        else:
+            raise Exception('Dtype not supported.')
+
+
 
         self.dtype = dtype
         self.shape = shape
 
-        self.indptr = array.array('i', [0])
+        self.indptr = array.array(index_type, [0])
         self.indices = array.array('i')
         self.data = array.array(type_flag)
 
@@ -63,10 +72,80 @@ class IncrementalCSRMatrix:
         indices = np.frombuffer(self.indices, dtype=np.int32)
         data = np.frombuffer(self.data, dtype=self.dtype)
 
-        return csr_array(
+        return sp.csr_array(
             (data, indices, indptr),
             shape=self.shape
         )
 
     def __len__(self):
+        return len(self.data)
+
+
+
+class IncrementalCOOMatrix(object):
+
+    def __init__(self, shape, dtype, index_dtype=np.float32):
+
+        if dtype is np.int32:
+            type_flag = 'i'
+        elif dtype is np.int64:
+            type_flag = 'l'
+        elif dtype is np.float32:
+            type_flag = 'f'
+        elif dtype is np.float64:
+            type_flag = 'd'
+        else:
+            raise Exception('Dtype not supported.')
+        
+        if index_dtype is np.int32:
+            index_type = 'i'
+        elif index_dtype is np.int64:
+            index_type = 'l'
+        else:
+            raise Exception('Dtype not supported.')
+
+        self.dtype = dtype
+        self.shape = shape
+
+        self.rows = array.array(index_type)
+        self.cols = array.array(index_type)
+        self.data = array.array(type_flag)
+
+    def append(self, i, j, v):
+
+        m, n = self.shape
+
+        if (i >= m or j >= n):
+            raise Exception('Index out of bounds')
+
+        self.rows.append(i)
+        self.cols.append(j)
+        self.data.append(v)
+
+    def append_row(self, x, idx):
+
+        m, n = self.shape
+
+        if idx >= m:
+            raise Exception('Row index out of bounds')
+
+        if x.shape[0] != n:
+            raise Exception('Input array has incorrect shape')
+
+        nonzero_indices = np.nonzero(x)[0]
+
+        for j in nonzero_indices:
+            self.append(idx, j, x[j])
+
+    def tocoo(self):
+
+        rows = np.frombuffer(self.rows, dtype=np.int32)
+        cols = np.frombuffer(self.cols, dtype=np.int32)
+        data = np.frombuffer(self.data, dtype=self.dtype)
+
+        return sp.coo_array((data, (rows, cols)),
+                             shape=self.shape)
+
+    def __len__(self):
+
         return len(self.data)

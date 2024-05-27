@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from copy import deepcopy
 from functools import partial
-from ngram_markov.sparse import IncrementalCSRMatrix
+from ngram_markov.sparse import IncrementalCSRMatrix, IncrementalCOOMatrix
 import numpy as np
 from pathlib import Path
 import scipy.sparse as sp
@@ -64,7 +64,7 @@ def _add_rows_to_tree(suffix_tree, queries, num_tokens, matrix):
 
 def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
     index_to_tokens_fn = partial(int_to_base_x, num_tokens, n - 2)
-    count_matrix = IncrementalCSRMatrix((num_tokens**(n-1), num_tokens), np.float64)
+    count_matrix = IncrementalCSRMatrix((num_tokens**(n-1), num_tokens), np.float32, np.float64)
 
     nonzero_prev_inds = np.argwhere(prev_counts.sum(axis=1) != 0).squeeze().tolist()
     nonzero_prev_grams = [index_to_tokens_fn(i) for i in nonzero_prev_inds]
