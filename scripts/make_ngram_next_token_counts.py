@@ -73,7 +73,7 @@ def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
     print(f'{len(queries)} queries')
     for query_batch in tqdm(batch_n(queries, 30_000)):
         _add_rows_to_tree(suffix_tree, query_batch, num_tokens, count_matrix)
-    return count_matrix.tocoo()
+    return count_matrix.tocoo().tocsr()
 
 
 def main(args):
