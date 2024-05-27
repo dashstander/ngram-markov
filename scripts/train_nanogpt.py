@@ -40,8 +40,9 @@ eval_only = False # if True, script exits right after the first eval
 always_save_checkpoint = True # if True, always save a checkpoint after each eval
 init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
 # wandb logging
+wandb_entity = 'dstander'
 wandb_log = False # disabled by default
-wandb_project = 'tinystories512'
+wandb_project = 'test-tinystories512'
 wandb_run_name = 'gpt2' # 'run' + str(time.time())
 # data
 dataset = 'tinystories512'
@@ -253,7 +254,7 @@ def get_lr(it):
 # logging
 if wandb_log and master_process:
     import wandb
-    wandb.init(project=wandb_project, name=wandb_run_name, config=config)
+    wandb.init(entity=wandb_entity, project=wandb_project, name=wandb_run_name, config=config)
 
 # training loop
 X, Y = get_batch('train') # fetch the very first batch

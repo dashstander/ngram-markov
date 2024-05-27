@@ -56,6 +56,7 @@ def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
     nonzero_prev_grams = [index_to_tokens_fn(i) for i in nonzero_prev_inds]
     queries = get_index_queries(nonzero_prev_grams, nonzero_prev_inds, prev_counts)
     print(f'{len(queries)} queries')
+    
     raw_ngram_counts = suffix_tree.batch_count_next(queries, num_tokens - 1)
     for query, ngram_row in zip(queries, raw_ngram_counts):
         idx = q2i_fn(query)
