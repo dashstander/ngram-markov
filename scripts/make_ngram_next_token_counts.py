@@ -6,6 +6,7 @@ import numpy as np
 from pathlib import Path
 import scipy.sparse as sp
 from tokengrams import MemmapIndex
+from tqdm import tqdm
 
 
 parser = ArgumentParser()
@@ -13,6 +14,10 @@ parser.add_argument('--suffix-tree-path', type=str, required=True)
 parser.add_argument('--tokens-path', type=str, required=True)
 parser.add_argument('--ngram', type=int, default=2)
 parser.add_argument('--num-tokens', type=int, required=True)
+
+
+def batch_n(x, n):
+    return [x[i:i+n] for i in range(0, len(x), n)]
 
 
 def int_to_base_x(base: int, minlen: int, x: int):
@@ -47,20 +52,24 @@ def query_to_index(num_tokens, query):
     return sum([q * b for q, b, in zip(query, base_token)])
 
 
+def _add_rows_to_tree(suffix_tree, queries, num_tokens, matrix):
+    q2i_fn = partial(query_to_index, num_tokens)
+    raw_ngram_counts = suffix_tree.batch_count_next(queries, num_tokens - 1)
+    for query, ngram_row in zip(queries, raw_ngram_counts):
+        idx = q2i_fn(query)
+        matrix.append_row(np.array(ngram_row, dtype=np.float32), idx)
+
+
 def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
     index_to_tokens_fn = partial(int_to_base_x, num_tokens, n - 2)
-    q2i_fn = partial(query_to_index, num_tokens)
     count_matrix = IncrementalCSRMatrix((num_tokens**(n-1), num_tokens), np.float32)
 
     nonzero_prev_inds = np.argwhere(prev_counts.sum(axis=1) != 0).squeeze().tolist()
     nonzero_prev_grams = [index_to_tokens_fn(i) for i in nonzero_prev_inds]
     queries = get_index_queries(nonzero_prev_grams, nonzero_prev_inds, prev_counts)
     print(f'{len(queries)} queries')
-    
-    raw_ngram_counts = suffix_tree.batch_count_next(queries, num_tokens - 1)
-    for query, ngram_row in zip(queries, raw_ngram_counts):
-        idx = q2i_fn(query)
-        count_matrix.append_row(np.array(ngram_row, dtype=np.float32), idx)
+    for query_batch in tqdm(batch_n(queries, 30_000)):
+        _add_rows_to_tree(suffix_tree, query_batch, num_tokens, count_matrix)
     return count_matrix.tocsr()
 
 
