@@ -115,6 +115,7 @@ class GPTConfig:
     vocab_size: int = 512
     n_head: int = 4
     n_embed: int = 512
+    n_layer: int = 2
     dropout: float = 0.0
     bias: bool = False # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
 
