@@ -84,7 +84,7 @@ class IncrementalCSRMatrix:
 
 class IncrementalCOOMatrix(object):
 
-    def __init__(self, shape, dtype, index_dtype=np.float32):
+    def __init__(self, shape, dtype, index_dtype=np.int32):
 
         if dtype is np.int32:
             type_flag = 'i'
