@@ -351,6 +351,12 @@ while True:
             mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt)
             running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
         print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
+        wandb.log({
+                "iter": iter_num,
+                "train/loss": lossf['train'],
+                "lr": lr,
+                "mfu": running_mfu*100, # convert to percentage
+            })
     iter_num += 1
     local_iter_num += 1
 
