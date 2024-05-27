@@ -23,7 +23,7 @@ parser.add_argument('--num-tokens', type=int, required=True)
 def batch_n(x, n):
     return [x[i:i+n] for i in range(0, len(x), n)]
 
-
+"""
 def int_to_base_x(base: int, minlen: int, x: int):
     curr_val, mod = divmod(x, base)
     nums = [mod]
@@ -39,6 +39,18 @@ def int_to_base_x(base: int, minlen: int, x: int):
         extras = [0] * need_extras
         nums = extras + nums
     return nums
+"""
+
+def int_to_base_x(base: int, minlen: int, arr: np.ndarray):
+    result = np.zeros((len(arr), minlen), dtype=int)
+    arr_copy = arr.copy()
+
+    for i in range(minlen - 1, -1, -1):
+        result[:, i] = arr_copy % base
+        arr_copy //= base
+
+    return result
+
 
 
 def get_index_queries(prev_queries, prev_inds, counts):
@@ -77,8 +89,9 @@ def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
     index_to_tokens_fn = partial(int_to_base_x, num_tokens, n - 2)
     #count_matrix = IncrementalCOOMatrix((num_tokens**(n-1), num_tokens), np.float64, np.int64)
     count_matrix = sp.dok_array((num_tokens**(n-1), num_tokens), dtype=np.float64)
-    nonzero_prev_inds = np.argwhere(prev_counts.sum(axis=1) != 0).squeeze().tolist()
-    nonzero_prev_grams = [index_to_tokens_fn(i) for i in nonzero_prev_inds]
+    nonzero_prev_inds, _ = prev_counts.nonzero()
+    nonzero_prev_inds = np.unique(nonzero_prev_inds)
+    nonzero_prev_grams = index_to_tokens_fn(nonzero_prev_inds).tolist()
     queries = get_index_queries(nonzero_prev_grams, nonzero_prev_inds, prev_counts)
     print(f'{len(queries)} queries')
     for query_batch in tqdm(batch_n(queries, 30_000)):
