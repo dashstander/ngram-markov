@@ -78,8 +78,9 @@ def main(args):
         dtype=np.float32
     )
     unigram_counts = bigram_counts.sum(axis=0)
-    np.save(data_dir / '1grams.np', unigram_counts)
-    np.save(data_dir / '2grams.np', bigram_counts)
+    bigram_counts = sp.csr_array(bigram_counts)
+    np.save(data_dir / '1grams.npy', unigram_counts)
+    sp.save_npz(data_dir / '2grams.npz', bigram_counts)
     curr_mat = bigram_counts
     curr_n = 2
     while curr_n < max_n:
@@ -87,7 +88,7 @@ def main(args):
         print(f'Querying for {curr_n}-gram counts...')
         curr_mat = get_ngram_counts(suffix_index, curr_mat, curr_n, num_tokens)
         print(f'Writing {curr_n}-gram matrix...')
-        np.savez(data_dir / f'{curr_n}grams.np', curr_mat)
+        sp.save_npz(data_dir / f'{curr_n}grams.npz', curr_mat)
 
 
 if __name__ == '__main__':
