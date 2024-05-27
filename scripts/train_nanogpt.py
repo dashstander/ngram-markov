@@ -353,7 +353,7 @@ while True:
         print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
         wandb.log({
                 "iter": iter_num,
-                "train/loss": lossf['train'],
+                "train/loss": lossf,
                 "lr": lr,
                 "mfu": running_mfu*100, # convert to percentage
             })
