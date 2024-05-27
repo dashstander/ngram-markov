@@ -264,9 +264,8 @@ def compare_to_ngram():
         kl_div = torch.zeros(eval_iters)
         for k in range(eval_iters):
             X, Y = get_batch('train')
-            with ctx:
-                logits, loss = model(X, Y)
-            divs = calculate_ngram_kl_divergence(model, X, ngram_distribution, n)
+            with ctx: 
+                divs = calculate_ngram_kl_divergence(model, X, ngram_distribution, n)
             kl_div[k] = divs.mean().item()
         out[n] = kl_div.mean()
     return out
@@ -318,7 +317,7 @@ while True:
                 "lr": lr,
                 "mfu": running_mfu*100, # convert to percentage
             }
-            msg.update({f'ngram_div/{n}': val.item() for n, val in ngram_divs})
+            msg.update({f'ngram_div/{n}': val.item() for n, val in ngram_divs.items()})
             wandb.log(msg)
         if losses['validation'] < best_val_loss or always_save_checkpoint:
             best_val_loss = losses['validation']
