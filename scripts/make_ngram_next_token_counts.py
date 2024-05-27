@@ -78,7 +78,7 @@ def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
     print(f'{len(queries)} queries')
     for query_batch in tqdm(batch_n(queries, 30_000)):
         _add_rows_to_tree(suffix_tree, query_batch, num_tokens, count_matrix)
-    return count_matrix
+    return count_matrix.tocoo()
 
 
 def main(args):
@@ -96,7 +96,7 @@ def main(args):
         dtype=np.float32
     )
     unigram_counts = bigram_counts.sum(axis=0)
-    bigram_counts = sp.csr_array(bigram_counts)
+    bigram_counts = sp.coo_array(bigram_counts)
     np.save(data_dir / '1grams.npy', unigram_counts)
     sp.save_npz(data_dir / '2grams.npz', bigram_counts)
     curr_mat = bigram_counts
