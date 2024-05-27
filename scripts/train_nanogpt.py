@@ -293,12 +293,12 @@ while True:
             wandb.log({
                 "iter": iter_num,
                 "train/loss": losses['train'],
-                "val/loss": losses['val'],
+                "val/loss": losses['validation'],
                 "lr": lr,
                 "mfu": running_mfu*100, # convert to percentage
             })
-        if losses['val'] < best_val_loss or always_save_checkpoint:
-            best_val_loss = losses['val']
+        if losses['validation'] < best_val_loss or always_save_checkpoint:
+            best_val_loss = losses['validation']
             if iter_num > 0:
                 checkpoint = {
                     'model': raw_model.state_dict(),

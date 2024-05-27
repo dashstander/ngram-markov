@@ -36,7 +36,7 @@ import tqdm
 
 from datasets import load_dataset
 from transformers import AutoTokenizer
-from ngram_markov.indexed_dataset import make_builder
+from ngram_markov.data.indexed_dataset import make_builder
 
 
 class Encoder(object):
