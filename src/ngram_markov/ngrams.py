@@ -32,7 +32,7 @@ def calculate_ngram_kl_divergence(model, tokens, ngrams, n):
     # Convert n-grams to indices for accessing the sparse matrix
     vocab_size = ngrams.shape[1]
     exponents = vocab_size **  torch.flip(torch.arange(n - 1, device=tokens.device).view(1, 1, -1), [-1])
-    indices = torch.sum(ngrams_tensor * exponents, dim=-1)
+    indices = torch.sum(ngrams_tensor * exponents, dim=-1).detach().cpu()
 
     # Get the n-gram distributions from the sparse matrix
     ngram_distributions = torch.tensor(ngrams[indices.view(-1).numpy()].toarray(), device=tokens.device)
