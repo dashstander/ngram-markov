@@ -7,7 +7,7 @@ import numpy as np
 
 class IncrementalCSRMatrix:
 
-    def __init__(self, shape, dtype, index_dtype=np.float32):
+    def __init__(self, shape, dtype, index_dtype=np.int32):
 
         if dtype is np.int32:
             type_flag = 'i'
@@ -30,6 +30,7 @@ class IncrementalCSRMatrix:
 
 
         self.dtype = dtype
+        self.index_dtype = index_dtype 
         self.shape = shape
 
         self.indptr = array.array(index_type, [0])
@@ -68,8 +69,8 @@ class IncrementalCSRMatrix:
 
         self.update_indptr(self.shape[0] - 1)
 
-        indptr = np.frombuffer(self.indptr, dtype=np.int32)
-        indices = np.frombuffer(self.indices, dtype=np.int32)
+        indptr = np.frombuffer(self.indptr, dtype=self.index_dtype)
+        indices = np.frombuffer(self.indices, dtype=self.index_dtype)
         data = np.frombuffer(self.data, dtype=self.dtype)
 
         return sp.csr_array(
@@ -106,6 +107,7 @@ class IncrementalCOOMatrix(object):
 
         self.dtype = dtype
         self.shape = shape
+        self.index_dtype = index_dtype
 
         self.rows = array.array(index_type)
         self.cols = array.array(index_type)
@@ -139,8 +141,8 @@ class IncrementalCOOMatrix(object):
 
     def tocoo(self):
 
-        rows = np.frombuffer(self.rows, dtype=np.int32)
-        cols = np.frombuffer(self.cols, dtype=np.int32)
+        rows = np.frombuffer(self.rows, dtype=self.index_dtype)
+        cols = np.frombuffer(self.cols, dtype=self.index_dtype)
         data = np.frombuffer(self.data, dtype=self.dtype)
 
         return sp.coo_array((data, (rows, cols)),
