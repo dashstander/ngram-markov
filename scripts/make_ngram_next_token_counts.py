@@ -73,7 +73,7 @@ def _add_rows_to_tree(suffix_tree, queries, num_tokens, matrix):
 
 
 def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
-    prev_counts = prev_counts.tolil()
+    prev_counts = prev_counts.todok()
     index_to_tokens_fn = partial(int_to_base_x, num_tokens, n - 2)
     #count_matrix = IncrementalCOOMatrix((num_tokens**(n-1), num_tokens), np.float64, np.int64)
     count_matrix = sp.dok_array((num_tokens**(n-1), num_tokens), dtype=np.float64)
