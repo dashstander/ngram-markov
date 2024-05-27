@@ -9,6 +9,10 @@ from tokengrams import MemmapIndex
 from tqdm import tqdm
 
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning) 
+
+
 parser = ArgumentParser()
 parser.add_argument('--suffix-tree-path', type=str, required=True)
 parser.add_argument('--tokens-path', type=str, required=True)
