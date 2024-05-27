@@ -19,24 +19,37 @@ $ torchrun --nproc_per_node=8 --nnodes=2 --node_rank=1 --master_addr=123.456.123
 import os
 import time
 import math
+from pathlib import Path
 import pickle
 from contextlib import nullcontext
 
 import numpy as np
+import scipy.sparse as sp
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
 from ngram_markov.model import GPTConfig, GPT
-from ngram_markov.utils import create_ngrams
+from ngram_markov.ngrams import calculate_ngram_kl_divergence
+
+
+# -----------------------------------------------------------------------------
+# N-gram stuff
+ngram_index_dir = Path('data/tinystories/ngrams')
+ngram_files = {
+    2: ngram_index_dir / '2grams.npz',
+    3: ngram_index_dir / '3grams.npz',
+    4: ngram_index_dir / '4grams.npz'
+}
+
 
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
 # I/O
 out_dir = 'out'
-eval_interval = 500
+eval_interval = 100
 log_interval = 1
-eval_iters = 200
+eval_iters = 100
 eval_only = False # if True, script exits right after the first eval
 always_save_checkpoint = True # if True, always save a checkpoint after each eval
 init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
@@ -239,17 +252,24 @@ def estimate_loss():
     return out
 
 
+ngrams = [2, 3, 4]
+
 @torch.no_grad()
 def compare_to_ngram():
     out = {}
-    model.eval()
-    losses = torch.zeros(eval_iters)
-    for k in range(eval_iters):
-        X, Y = get_batch('train')
 
-        with ctx:
-            logits, loss = model(X, Y)
-        
+    model.eval()
+    for n, fp in ngram_files.items():
+        ngram_distribution = sp.load_npz(fp)
+        kl_div = torch.zeros(eval_iters)
+        for k in range(eval_iters):
+            X, Y = get_batch('train')
+            with ctx:
+                logits, loss = model(X, Y)
+            divs = calculate_ngram_kl_divergence(model, X, ngram_distribution, n)
+            kl_div[k] = divs.mean().item()
+        out[n] = kl_div.mean()
+    return out
 
 
 
@@ -288,15 +308,18 @@ while True:
     # evaluate the loss on train/val sets and write checkpoints
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
+        ngram_divs = compare_to_ngram()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['validation']:.4f}")
         if wandb_log:
-            wandb.log({
+            msg = {
                 "iter": iter_num,
                 "train/loss": losses['train'],
                 "val/loss": losses['validation'],
                 "lr": lr,
                 "mfu": running_mfu*100, # convert to percentage
-            })
+            }
+            msg.update({f'ngram_div/{n}': val.item() for n, val in ngram_divs})
+            wandb.log(msg)
         if losses['validation'] < best_val_loss or always_save_checkpoint:
             best_val_loss = losses['validation']
             if iter_num > 0:
