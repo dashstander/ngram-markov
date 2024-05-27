@@ -53,6 +53,11 @@ def query_to_index(num_tokens, query):
 
 
 
+def append_row(matrix, row, idx):
+    nonzero_indices = np.nonzero(row)[0]
+    for j in nonzero_indices:
+        matrix[idx, j] = row[j]
+
 def _add_rows_to_tree(suffix_tree, queries, num_tokens, matrix):
     q2i_fn = partial(query_to_index, num_tokens)
     #print('Querying suffix tree')
@@ -60,20 +65,20 @@ def _add_rows_to_tree(suffix_tree, queries, num_tokens, matrix):
     #print('Adding rows')
     for query, ngram_row in zip(queries, raw_ngram_counts):
         idx = q2i_fn(query)
-        matrix.append_row(np.array(ngram_row, dtype=np.float64), idx)
+        append_row(matrix, np.array(ngram_row, dtype=np.float64), idx)
 
 
 def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
     index_to_tokens_fn = partial(int_to_base_x, num_tokens, n - 2)
-    count_matrix = IncrementalCOOMatrix((num_tokens**(n-1), num_tokens), np.float64, np.int64)
-    #count_matrix = sp.coo_array((num_tokens**(n-1), num_tokens), dtype=np.float32)
+    #count_matrix = IncrementalCOOMatrix((num_tokens**(n-1), num_tokens), np.float64, np.int64)
+    count_matrix = sp.dok_array((num_tokens**(n-1), num_tokens), dtype=np.float64)
     nonzero_prev_inds = np.argwhere(prev_counts.sum(axis=1) != 0).squeeze().tolist()
     nonzero_prev_grams = [index_to_tokens_fn(i) for i in nonzero_prev_inds]
     queries = get_index_queries(nonzero_prev_grams, nonzero_prev_inds, prev_counts)
     print(f'{len(queries)} queries')
     for query_batch in tqdm(batch_n(queries, 30_000)):
         _add_rows_to_tree(suffix_tree, query_batch, num_tokens, count_matrix)
-    return count_matrix.tocoo().tocsr()
+    return count_matrix.tocsr()
 
 
 def main(args):
