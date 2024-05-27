@@ -54,7 +54,9 @@ def query_to_index(num_tokens, query):
 
 def _add_rows_to_tree(suffix_tree, queries, num_tokens, matrix):
     q2i_fn = partial(query_to_index, num_tokens)
+    print('Querying suffix tree')
     raw_ngram_counts = suffix_tree.batch_count_next(queries, num_tokens - 1)
+    print('Adding rows')
     for query, ngram_row in zip(queries, raw_ngram_counts):
         idx = q2i_fn(query)
         matrix.append_row(np.array(ngram_row, dtype=np.float64), idx)
