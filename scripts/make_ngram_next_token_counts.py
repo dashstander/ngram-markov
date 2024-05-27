@@ -40,7 +40,7 @@ def int_to_base_x(base: int, minlen: int, x: int):
 def get_index_queries(prev_queries, prev_inds, counts):
     queries = []
     for i, query in zip(prev_inds, prev_queries):
-        _, nonzero_cols = counts[[i]].nonzero()
+        _, nonzero_cols = counts.getrow(i).nonzero()
         queries.extend([
             deepcopy(query) + [j] for j in nonzero_cols.tolist()
         ])
