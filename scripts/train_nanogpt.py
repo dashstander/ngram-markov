@@ -41,7 +41,7 @@ always_save_checkpoint = True # if True, always save a checkpoint after each eva
 init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
 # wandb logging
 wandb_entity = 'dstander'
-wandb_log = False # disabled by default
+wandb_log = True # disabled by default
 wandb_project = 'test-tinystories512'
 wandb_run_name = 'gpt2' # 'run' + str(time.time())
 # data
