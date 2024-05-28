@@ -62,6 +62,7 @@ def get_index_queries(prev_queries, prev_inds, counts):
         ])
     return queries
 
+
 def query_to_index(num_tokens, query):
     exponents = reversed(list(range(len(query))))
     base_token = [num_tokens ** i for i in exponents]
@@ -85,14 +86,13 @@ def _add_rows_to_tree(suffix_tree, queries, num_tokens, matrix):
 
 
 def get_ngram_counts(suffix_tree, prev_counts, n, num_tokens):
-    prev_counts = prev_counts.todok()
+    #prev_counts = prev_counts.todok()
     index_to_tokens_fn = partial(int_to_base_x, num_tokens, n - 2)
     #count_matrix = IncrementalCOOMatrix((num_tokens**(n-1), num_tokens), np.float64, np.int64)
     count_matrix = sp.dok_array((num_tokens**(n-1), num_tokens), dtype=np.float64)
-    nonzero_prev_inds, _ = prev_counts.nonzero()
-    nonzero_prev_inds = np.unique(nonzero_prev_inds)
-    nonzero_prev_grams = index_to_tokens_fn(nonzero_prev_inds).tolist()
-    queries = get_index_queries(nonzero_prev_grams, nonzero_prev_inds, prev_counts)
+    nonzero_rows, nonzero_cols = prev_counts.nonzero()
+    nonzero_prev_grams = index_to_tokens_fn(nonzero_rows).tolist()
+    queries = [row + col for row, col in zip(nonzero_prev_grams, nonzero_cols[:, None].tolist())]
     print(f'{len(queries)} queries')
     for query_batch in tqdm(batch_n(queries, 30_000)):
         _add_rows_to_tree(suffix_tree, query_batch, num_tokens, count_matrix)
