@@ -61,7 +61,7 @@ init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
 wandb_entity = 'dstander'
 wandb_log = True # disabled by default
 wandb_project = 'tinystories512'
-wandb_run_name = 'gpt2' # 'run' + str(time.time())
+wandb_run_name = 'gpt2-4layers' # 'run' + str(time.time())
 # data
 dataset = 'tinystories'
 gradient_accumulation_steps = 5 # used to simulate larger batch sizes
