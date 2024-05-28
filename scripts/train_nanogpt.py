@@ -64,11 +64,11 @@ wandb_project = 'tinystories512'
 wandb_run_name = 'gpt2' # 'run' + str(time.time())
 # data
 dataset = 'tinystories'
-gradient_accumulation_steps = 4 # used to simulate larger batch sizes
-batch_size = 256 # if gradient_accumulation_steps > 1, this is the micro-batch size
+gradient_accumulation_steps = 5 # used to simulate larger batch sizes
+batch_size = 128 # if gradient_accumulation_steps > 1, this is the micro-batch size
 block_size = 1024
 # model
-n_layer = 2
+n_layer = 4
 n_head = 4
 n_embed = 512
 dropout = 0.0 # for pretraining 0 is good, for finetuning try 0.1+
