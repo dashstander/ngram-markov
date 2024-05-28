@@ -34,6 +34,7 @@ def calculate_ngram_kl_divergence(model, tokens, ngrams, n):
         log_model_probs = torch.log_softmax(logits, dim=-1)
     else:
         # Get the n-grams from the tokens
+        ngrams = ngrams.todok()
         ngrams_tensor = create_ngrams(tokens, n-1)
 
         # Convert n-grams to indices for accessing the sparse matrix
