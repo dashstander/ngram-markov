@@ -37,9 +37,12 @@ from ngram_markov.ngrams import calculate_ngram_kl_divergence
 # N-gram stuff
 ngram_index_dir = Path('data/tinystories/ngrams')
 ngram_files = {
+    1: ngram_index_dir / '1grams.npy',
     2: ngram_index_dir / '2grams.npz',
     3: ngram_index_dir / '3grams.npz',
-    4: ngram_index_dir / '4grams.npz'
+    4: ngram_index_dir / '4grams.npz',
+    5: ngram_index_dir / '5grams.npz',
+    6: ngram_index_dir / '6grams.npz',
 }
 
 
@@ -47,7 +50,8 @@ ngram_files = {
 # default config values designed to train a gpt2 (124M) on OpenWebText
 # I/O
 out_dir = 'out'
-eval_interval = 100
+eval_interval = 5000
+extra_evals = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
 log_interval = 1
 eval_iters = 10
 eval_only = False # if True, script exits right after the first eval
@@ -115,6 +119,9 @@ else:
     ddp_world_size = 1
 tokens_per_iter = gradient_accumulation_steps * ddp_world_size * batch_size * block_size
 print(f"tokens per iteration will be: {tokens_per_iter:,}")
+
+eval_iterations = sorted(extra_evals + list(range(0, max_iters, eval_interval)))
+
 
 if master_process:
     os.makedirs(out_dir, exist_ok=True)
@@ -260,7 +267,10 @@ def compare_to_ngram():
 
     model.eval()
     for n, fp in ngram_files.items():
-        ngram_distribution = sp.load_npz(fp)
+        if n == 1:
+            ngram_distribution = np.load(fp)
+        else:
+            ngram_distribution = sp.load_npz(fp)
         kl_div = torch.zeros(eval_iters)
         for k in range(eval_iters):
             X, Y = get_batch('train')
@@ -305,7 +315,7 @@ while True:
         param_group['lr'] = lr
 
     # evaluate the loss on train/val sets and write checkpoints
-    if iter_num % eval_interval == 0 and master_process:
+    if iter_num in eval_iterations and master_process:
         losses = estimate_loss()
         ngram_divs = compare_to_ngram()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['validation']:.4f}")
