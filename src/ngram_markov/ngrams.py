@@ -34,13 +34,16 @@ def calculate_ngram_kl_divergence(model, tokens, ngrams, n):
         log_model_probs = torch.log_softmax(logits, dim=-1)
     else:
         # Get the n-grams from the tokens
-        ngrams = ngrams.todok()
-        ngrams_tensor = create_ngrams(tokens, n-1)
+        if n <= 5:
+            ngrams = ngrams.tocsr()
+        else:
+            ngrams = ngrams.todok()
+        token_ngrams = create_ngrams(tokens, n-1)
 
         # Convert n-grams to indices for accessing the sparse matrix
         vocab_size = ngrams.shape[1]
         exponents = vocab_size **  torch.flip(torch.arange(n - 1, device=tokens.device).view(1, 1, -1), [-1])
-        indices = torch.sum(ngrams_tensor * exponents, dim=-1).detach().cpu()
+        indices = torch.sum(token_ngrams * exponents, dim=-1).detach().cpu()
 
         # Get the n-gram distributions from the sparse matrix
         ngram_counts = torch.tensor(ngrams[indices.view(-1).numpy()].toarray(), device=tokens.device)
