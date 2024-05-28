@@ -34,7 +34,7 @@ def calculate_ngram_kl_divergence(model, tokens, ngrams, n):
         log_model_probs = torch.log_softmax(logits, dim=-1)
     else:
         # Get the n-grams from the tokens
-        if n <= 5:
+        if n < 5:
             ngrams = ngrams.tocsr()
         else:
             ngrams = ngrams.todok()
