@@ -46,6 +46,7 @@ def unshard(
         size = SHARD_SIZE if not (i == num_shards - 1) else final_shard_size
         buffer_bos = i * SHARD_SIZE
         write_shard(full_idx_map, buffer_bos, shard_filename, size)
+        full_idx_map.flush()
         #full_idx_map[i * SHARD_SIZE: (i * SHARD_SIZE) + size] = shard_memmap
 
 if __name__ == "__main__":
