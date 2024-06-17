@@ -5,9 +5,12 @@ import numpy as np
 from tqdm import tqdm
 
 
-def write_shard(full_dataset, pos, shard_filename, shard_size):
+def write_shard(full_dataset, pos, shard_filename, shard_size):  
+    chunk_size = 1024 * 1024 * 1024 # 1 GB chunks
     shard_memmap = np.memmap(shard_filename, mode="r", order="C")
-    full_dataset[pos: (pos + shard_size)] = shard_memmap
+    for i in range(0, shard_size, chunk_size):
+        chunk_end = min(i + chunk_size, shard_size)
+        full_dataset[pos + i: pos + chunk_end] = shard_memmap[i:chunk_end]
     del shard_memmap
 
 
