@@ -43,7 +43,6 @@ def unshard(
         shard_filename = os.path.join(input_dir, base_filename) + f"-{i:05}-of-{(num_shards - 1):05}.bin"
         print(shard_filename)
         #shard_memmap = np.memmap(shard_filename, mode="r", order="C")
-        print(shard_memmap.shape)
         size = SHARD_SIZE if not (i == num_shards - 1) else final_shard_size
         buffer_bos = i * SHARD_SIZE
         write_shard(full_idx_map, buffer_bos, shard_filename, size)
