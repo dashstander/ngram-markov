@@ -5,6 +5,12 @@ import numpy as np
 from tqdm import tqdm
 
 
+def write_shard(full_dataset, pos, shard_filename, shard_size):
+    shard_memmap = np.memmap(shard_filename, mode="r", order="C")
+    full_dataset[pos: (pos + shard_size)] = shard_memmap
+    del shard_memmap
+
+
 def unshard(
     input_file: str,
     num_shards: int,
@@ -29,7 +35,6 @@ def unshard(
     # create full .bin file of proper size
     open(os.path.join(output_dir, base_filename) + ".bin", "w+").close()
     full_idx_map = np.memmap(os.path.join(output_dir, base_filename) + ".bin", shape=(SHARD_SIZE * (num_shards - 1) + final_shard_size), mode="w+", order="C")
-    print(full_idx_map.shape)
 
     # chunk by iterating over file
     print(f"Loading {num_shards} shards from {input_dir}")
@@ -37,12 +42,12 @@ def unshard(
         
         shard_filename = os.path.join(input_dir, base_filename) + f"-{i:05}-of-{(num_shards - 1):05}.bin"
         print(shard_filename)
-        shard_memmap = np.memmap(shard_filename, mode="r", order="C")
+        #shard_memmap = np.memmap(shard_filename, mode="r", order="C")
         print(shard_memmap.shape)
         size = SHARD_SIZE if not (i == num_shards - 1) else final_shard_size
-        full_idx_map[i * SHARD_SIZE: (i * SHARD_SIZE) + size] = shard_memmap
-
-        del shard_memmap
+        buffer_bos = i * SHARD_SIZE
+        write_shard(full_idx_map, buffer_bos, shard_filename, size)
+        #full_idx_map[i * SHARD_SIZE: (i * SHARD_SIZE) + size] = shard_memmap
 
 if __name__ == "__main__":
     
