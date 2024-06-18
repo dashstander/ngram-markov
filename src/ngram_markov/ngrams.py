@@ -42,7 +42,8 @@ def calculate_ngram_kl_divergence(model, tokens, index, n):
                 token_ngrams.reshape(-1, n-1).cpu().numpy(),
                 511
             ),
-            dtype=torch.float32
+            dtype=torch.float32,
+            device=tokens.device
         )
         ngram_distributions = ngram_counts / ngram_counts.sum(axis=1)[:, None]
         ngram_distributions = ngram_distributions.view(tokens.shape[0], tokens.shape[1] - n + 2, vocab_size)
@@ -51,6 +52,6 @@ def calculate_ngram_kl_divergence(model, tokens, index, n):
         log_model_probs = torch.log_softmax(logits[:, n-2:].contiguous(), dim=-1)
         
     # Calculate the KL divergence between the n-gram distributions and the model's logits
-    kl_div = kl_divergence(log_ngram_probs, log_model_probs.detach().cpu())
+    kl_div = kl_divergence(log_ngram_probs, log_model_probs)
 
     return kl_div
