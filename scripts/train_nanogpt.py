@@ -52,7 +52,7 @@ ngram_files = {
 # I/O
 out_dir = '/media/External01/out'
 eval_interval = 1000
-extra_evals = [2, 4, 8, 16, 32, 64] + list(range(100, 2000))
+extra_evals = [2, 4, 8, 16, 32, 64] + list(range(100, 2000, 100))
 log_interval = 1
 eval_iters = 2
 eval_only = False # if True, script exits right after the first eval
