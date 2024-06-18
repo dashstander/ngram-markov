@@ -275,7 +275,7 @@ def compare_to_ngram():
         for k in range(eval_iters):
             X, Y = get_batch('train')
             with ctx: 
-                divs = calculate_ngram_kl_divergence(model, X, , n)
+                divs = calculate_ngram_kl_divergence(model, X, index, n)
             kl_div[k] = divs.nanmean().item()
         out[n] = kl_div.mean()
     return out
