@@ -25,6 +25,7 @@ from contextlib import nullcontext
 
 import numpy as np
 import scipy.sparse as sp
+from tokengrams import MemmapIndex
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
@@ -259,23 +260,22 @@ def estimate_loss():
     return out
 
 
-ngrams = [2, 3, 4]
-
 @torch.no_grad()
 def compare_to_ngram():
     out = {}
+    ts_bin_path = 'data/tinystories/train.bin'
+    index_path = "data/tinystories/ngrams/suffix_tree.idx"
 
+    index = MemmapIndex(ts_bin_path, index_path)
     model.eval()
-    for n, fp in ngram_files.items():
-        if n == 1:
-            ngram_distribution = np.load(fp)
-        else:
-            ngram_distribution = sp.load_npz(fp)
+    ngram_values = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    for n in ngram_values:
+       
         kl_div = torch.zeros(eval_iters)
         for k in range(eval_iters):
             X, Y = get_batch('train')
             with ctx: 
-                divs = calculate_ngram_kl_divergence(model, X, ngram_distribution, n)
+                divs = calculate_ngram_kl_divergence(model, X, , n)
             kl_div[k] = divs.nanmean().item()
         out[n] = kl_div.mean()
     return out
