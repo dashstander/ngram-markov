@@ -3,20 +3,25 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 
+
 NEW_SHARD_SIZE = 2049 * 7_000_000
+CHUNK_SIZE = 1024 * 1024 * 1024 // 2  # 1 GB chunks (in uint16 elements)
 
-def read_shard(filename):
-    return np.fromfile(filename, dtype=np.uint16)
+def read_chunk(shard_memmap, start, size):
+    chunk_end = min(start + size, shard_memmap.shape[0])
+    return shard_memmap[start:chunk_end]
 
-def write_shard(data, filename):
-    with open(filename, 'wb') as f:
-        data.tofile(f)
+
+def write_chunk(shard_memmap, start, data):
+    chunk_end = start + len(data)
+    shard_memmap[start:chunk_end] = data
+
 
 def reshard(
     input_dir: str,
     output_dir: str,
 ):
-    """Re-shard Megatron .bin files into new shards with NEW_SHARD_SIZE elements each"""
+    """Re-shard Pile .bin files into new shards with NEW_SHARD_SIZE elements each"""
 
     # Get all input shard files
     input_files = sorted([f for f in os.listdir(input_dir) if f.endswith('.bin')])
@@ -37,32 +42,47 @@ def reshard(
 
     current_shard = 0
     shard_pos = 0
-    output_data = np.empty(NEW_SHARD_SIZE, dtype=np.uint16)
+    output_shard = None
 
     for input_file in tqdm(input_files, desc="Processing input shards"):
-        input_data = read_shard(os.path.join(input_dir, input_file))
+        input_memmap = np.memmap(os.path.join(input_dir, input_file), dtype=np.uint16, mode='r')
         
-        i = 0
-        while i < len(input_data):
-            space_left = NEW_SHARD_SIZE - shard_pos
-            if space_left == 0:
-                # Write full shard
-                shard_filename = os.path.join(output_dir, f"{base_filename}-{current_shard:05d}-of-{num_new_shards-1:05d}.bin")
-                write_shard(output_data, shard_filename)
-                current_shard += 1
-                shard_pos = 0
-                space_left = NEW_SHARD_SIZE
+        for chunk_start in range(0, len(input_memmap), CHUNK_SIZE):
+            input_chunk = read_chunk(input_memmap, chunk_start, CHUNK_SIZE)
+            
+            while len(input_chunk) > 0:
+                if output_shard is None:
+                    # Create a new output shard
+                    shard_filename = os.path.join(output_dir, f"{base_filename}-{current_shard:05d}-of-{num_new_shards-1:05d}.bin")
+                    output_shard = np.memmap(shard_filename, dtype=np.uint16, mode='w+', shape=(NEW_SHARD_SIZE,))
+                    shard_pos = 0
 
-            # Copy data
-            elements_to_copy = min(space_left, len(input_data) - i)
-            output_data[shard_pos:shard_pos+elements_to_copy] = input_data[i:i+elements_to_copy]
-            shard_pos += elements_to_copy
-            i += elements_to_copy
+                space_left = NEW_SHARD_SIZE - shard_pos
+                chunk_to_write = input_chunk[:space_left]
+                write_chunk(output_shard, shard_pos, chunk_to_write)
+                shard_pos += len(chunk_to_write)
+                input_chunk = input_chunk[space_left:]
 
-    # Write last shard if there's any data left
-    if shard_pos > 0:
-        shard_filename = os.path.join(output_dir, f"{base_filename}-{current_shard:05d}-of-{num_new_shards-1:05d}.bin")
-        write_shard(output_data[:shard_pos], shard_filename)
+                if shard_pos == NEW_SHARD_SIZE:
+                    # Current shard is full, close it and move to the next
+                    output_shard.flush()
+                    del output_shard
+                    output_shard = None
+                    current_shard += 1
+
+        del input_memmap
+
+    # Close the last shard if it's not full
+    if output_shard is not None:
+        if shard_pos < NEW_SHARD_SIZE:
+            # Resize the last shard to its actual size
+            output_shard.flush()
+            del output_shard
+            last_shard_filename = os.path.join(output_dir, f"{base_filename}-{current_shard:05d}-of-{num_new_shards-1:05d}.bin")
+            os.truncate(last_shard_filename, shard_pos * 2)  # *2 because uint16 is 2 bytes
+        else:
+            output_shard.flush()
+            del output_shard
 
     print(f"Re-sharding complete. {num_new_shards} shards saved in {output_dir}")
 
