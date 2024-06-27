@@ -1,6 +1,7 @@
-import os
 import argparse
 import numpy as np
+import os
+from pathlib import Path
 from tqdm import tqdm
 
 
@@ -17,23 +18,27 @@ def write_chunk(shard_memmap, start, data):
     shard_memmap[start:chunk_end] = data
 
 
+def get_size(filename):
+    return np.memmap(filename, mode='r', dtype=np.uint16).shape
+
+
 def reshard(
-    input_dir: str,
-    output_dir: str,
+    input_dir: Path,
+    output_dir: Path,
 ):
     """Re-shard Pile .bin files into new shards with NEW_SHARD_SIZE elements each"""
 
     # Get all input shard files
-    input_files = sorted([f for f in os.listdir(input_dir) if f.endswith('.bin')])
+    input_files = sorted([f for f in input_dir.iterdir() if f.name.endswith('.bin')])
     
     if not input_files:
         raise ValueError(f"No .bin files found in {input_dir}")
 
     # Extract base filename from the first shard
-    base_filename = input_files[0].split('-')[0]
+    base_filename = input_files[0].name.split('-')[0]
 
     # Calculate total number of elements
-    total_elements = sum(os.path.getsize(os.path.join(input_dir, f)) // 2 for f in input_files)
+    total_elements = sum([get_size(filename)[0] for filename in input_files])
     
     # Calculate number of new shards
     num_new_shards = (total_elements + NEW_SHARD_SIZE - 1) // NEW_SHARD_SIZE
@@ -53,7 +58,7 @@ def reshard(
             while len(input_chunk) > 0:
                 if output_shard is None:
                     # Create a new output shard
-                    shard_filename = os.path.join(output_dir, f"{base_filename}-{current_shard:05d}-of-{num_new_shards-1:05d}.bin")
+                    shard_filename = output_dir / f"{base_filename}-{current_shard:05d}-of-{num_new_shards-1:05d}.bin"
                     output_shard = np.memmap(shard_filename, dtype=np.uint16, mode='w+', shape=(NEW_SHARD_SIZE,))
                     shard_pos = 0
 
@@ -78,7 +83,7 @@ def reshard(
             # Resize the last shard to its actual size
             output_shard.flush()
             del output_shard
-            last_shard_filename = os.path.join(output_dir, f"{base_filename}-{current_shard:05d}-of-{num_new_shards-1:05d}.bin")
+            last_shard_filename = output_dir / f"{base_filename}-{current_shard:05d}-of-{num_new_shards-1:05d}.bin"
             os.truncate(last_shard_filename, shard_pos * 2)  # *2 because uint16 is 2 bytes
         else:
             output_shard.flush()
@@ -105,4 +110,4 @@ if __name__ == "__main__":
     
     os.makedirs(args.output_dir, exist_ok=True)
 
-    reshard(args.input_dir, args.output_dir)
+    reshard(Path(args.input_dir), Path(args.output_dir))
