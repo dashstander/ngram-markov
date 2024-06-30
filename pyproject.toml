@@ -15,7 +15,6 @@ dependencies = [
     "polars>=0.20.22",
     "plotnine>=0.12.4",
     "scipy>=1.10.1",
-    "transformer_lens>=1.15.0",
     "torch>=2.3.0",
     "zstandard>=0.22.0",
     "pytest>=8.2.0",
@@ -24,8 +23,12 @@ dependencies = [
     "rustworkx>=0.14.2",
     "pybind11>=2.12.0",
     "wandb>=0.17.0",
-    "tokengrams @ file:///Users/dashiell/workspace/tokengrams/target/wheels/tokengrams-0.3.0-cp312-cp312-macosx_11_0_arm64.whl",
     "matplotlib>=3.9.0",
+    "marisa-trie>=1.2.0",
+    "tokengrams @ git+https://github.com/EleutherAI/tokengrams.git",
+    "networkx>=3.3",
+    "cola-ml>=0.0.5",
+    "transformer-lens @ git+https://github.com/dashstander/TransformerLens.git",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
