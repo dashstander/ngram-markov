@@ -91,6 +91,7 @@ def reshard(
 
     print(f"Re-sharding complete. {num_new_shards} shards saved in {output_dir}")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Re-shard Megatron data .bin files"
