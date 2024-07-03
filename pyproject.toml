@@ -27,8 +27,8 @@ dependencies = [
     "marisa-trie>=1.2.0",
     "tokengrams @ git+https://github.com/EleutherAI/tokengrams.git",
     "networkx>=3.3",
-    "cola-ml>=0.0.5",
     "transformer-lens @ git+https://github.com/dashstander/TransformerLens.git",
+    "cola-ml>=0.0.5",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
