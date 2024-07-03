@@ -149,8 +149,7 @@ def convert_nanogpt_weights(old_state_dict, cfg: HookedTransformerConfig):
             new_state_dict[f"blocks.{layer}.attn.b_V"] = torch.zeros(
                 cfg.n_heads, cfg.d_head, dtype=cfg.dtype)
             new_state_dict[f"blocks.{layer}.attn.b_O"] = torch.zeros(cfg.d_model, dtype=cfg.dtype)
-            
-    return new_state_dicts
+    return new_state_dict
 
 
 
