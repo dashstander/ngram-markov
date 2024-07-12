@@ -1,3 +1,5 @@
+from copy import deepcopy
+from functools import cache
 import numpy as np
 import torch
 
@@ -55,3 +57,42 @@ def calculate_ngram_kl_divergence(model, tokens, index, n):
     kl_div = kl_divergence(log_ngram_probs, log_model_probs)
 
     return kl_div
+
+
+@cache
+def get_unigram_probabilities(index, num_tokens):
+    queries = [[i] for i in range(num_tokens)]
+    bigram_counts = np.array(index.batch_count_next(queries, num_tokens - 1), dtype=np.float32)
+    unigram_counts = bigram_counts.sum(axis=1)
+    return unigram_counts / unigram_counts.sum()
+
+
+def ngram_inclusion_exclusion(context, index, num_tokens=512):
+    """
+    Compute n-gram probabilities and apply inclusion-exclusion principle.
+    
+    Args:
+    context (list): The context sequence.
+    index: The index object for counting n-grams.
+    num_tokens (int): The total number of possible tokens.
+    
+    Returns:
+    numpy.ndarray: A 2D array where each row represents the contribution
+                   from that level of context.
+    """
+    function_values = np.zeros((len(context) + 1, num_tokens), dtype=np.float32)
+    
+    # Compute unigram probabilities
+    unigram_probabilities = get_unigram_probabilities(index, num_tokens)
+    function_values[0, :] = unigram_probabilities
+    
+    # Compute n-gram probabilities
+    queries = [context[i:] for i in reversed(range(len(context)))]
+    probs = np.array(index.batch_count_next(queries, num_tokens - 1), dtype=np.float32)
+    probs /= probs.sum(axis=1)[:, None]
+    
+    # Apply inclusion-exclusion principle
+    for k in range(1, len(context) + 1):
+        function_values[k, :] = probs[k-1, :] - function_values[k-1, :]
+    
+    return function_values, probs
