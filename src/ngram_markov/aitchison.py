@@ -54,6 +54,7 @@ def aitch_dot(a, b):
     return torch.dot(clr(a), clr(b))
 
 
+@torch.compile
 def ortho_basis_rn(dim):
     def basis_fn(i, j):
         i = i + 1
@@ -81,6 +82,7 @@ def make_isometric_transforms(dim: int) -> Tuple[Callable]:
     
     return ilr, ilr_inv
 
+@torch.compile
 def ilr(x):
     """ x in Sim^D, this function sends it to R^(D-1) according to an orthonormal basis
     """
@@ -89,6 +91,7 @@ def ilr(x):
     return torch.matmul(ortho, clr(x))
 
 
+@torch.compile
 def ilr_inv(y):
     d = y.shape[-1]
     basis = ortho_basis_rn(d + 1)
