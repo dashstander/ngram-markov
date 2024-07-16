@@ -36,15 +36,7 @@ from ngram_markov.ngrams import calculate_ngram_kl_divergence
 
 # -----------------------------------------------------------------------------
 # N-gram stuff
-ngram_index_dir = Path('data/tinystories/ngrams')
-ngram_files = {
-    1: ngram_index_dir / '1grams.npy',
-    2: ngram_index_dir / '2grams.npz',
-    3: ngram_index_dir / '3grams.npz',
-    4: ngram_index_dir / '4grams.npz',
-    5: ngram_index_dir / '5grams.npz',
-    6: ngram_index_dir / '6grams.npz',
-}
+ngram_index_dir = Path('data/tinystories/')
 
 
 # -----------------------------------------------------------------------------
@@ -65,8 +57,8 @@ wandb_project = 'tinystories512'
 wandb_run_name = 'gpt2-4layers-2' # 'run' + str(time.time())
 # data
 dataset = 'tinystories'
-gradient_accumulation_steps = 5 # used to simulate larger batch sizes
-batch_size = 128 # if gradient_accumulation_steps > 1, this is the micro-batch size
+gradient_accumulation_steps = 10 # used to simulate larger batch sizes
+batch_size = 64 # if gradient_accumulation_steps > 1, this is the micro-batch size
 block_size = 1024
 # model
 n_layer = 4
@@ -264,7 +256,7 @@ def estimate_loss():
 def compare_to_ngram():
     out = {}
     ts_bin_path = 'data/tinystories/train.bin'
-    index_path = "data/tinystories/ngrams/suffix_tree.idx"
+    index_path = "data/tinystories/suffix_tree.idx"
 
     index = MemmapIndex(ts_bin_path, index_path)
     model.eval()
