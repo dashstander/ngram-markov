@@ -8,7 +8,6 @@ def add(a, b):
     x = torch.multiply(a, b)
     return x / torch.sum(x)
 
-
 def mul(a, alpha):
     """ Scalar multiplication on the simplex with the Aitchison geometry
     """
@@ -19,6 +18,10 @@ def mul(a, alpha):
 def inverse(x):
     x = torch.clamp(x, 1e-14, 1e14)
     return torch.reciprocal(x)
+
+
+def subtract(a, b):
+    return add(a, inverse(b))
 
 
 def distance(x, y):
