@@ -35,7 +35,7 @@ def reshard(
         raise ValueError(f"No .bin files found in {input_dir}")
 
     # Extract base filename from the first shard
-    base_filename = input_files[0].name.split('-')[0]
+    base_filename = input_files[0].name.split('-')[0].rstrip('.bin')
 
     # Calculate total number of elements
     total_elements = sum([get_size(filename)[0] for filename in input_files])
@@ -49,10 +49,10 @@ def reshard(
     shard_pos = 0
     output_shard = None
 
-    for input_file in tqdm(input_files, desc="Processing input shards"):
+    for input_file in input_files:
         input_memmap = np.memmap(os.path.join(input_dir, input_file), dtype=np.uint16, mode='r')
         
-        for chunk_start in range(0, len(input_memmap), CHUNK_SIZE):
+        for chunk_start in tqdm(range(0, len(input_memmap), CHUNK_SIZE)):
             input_chunk = read_chunk(input_memmap, chunk_start, CHUNK_SIZE)
             
             while len(input_chunk) > 0:
