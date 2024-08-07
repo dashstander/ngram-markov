@@ -19,7 +19,7 @@ def build_and_write_shard(idx, shard_dir, index_dir):
 
 if __name__ == '__main__':
     
-    tokens_path = Path('/mnt/ssd-1/pile-tokens-ngrams/')
+    tokens_path = Path('/mnt/ssd-1/pile-ngrams-tokens/')
     index_dir = Path('/mnt/ssd-1/pile-suffix-arrays/')
     index_dir.mkdir(parents=True, exist_ok=True)
     #index_path = index_dir / 'suffix_tree.idx'
