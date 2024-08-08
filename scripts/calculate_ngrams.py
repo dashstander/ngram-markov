@@ -24,9 +24,9 @@ def get_batch():
     return x
 
 
-def get_ngram_counts(index, data, n, vocab_size):
+def get_ngram_counts(index, data, n):
     ngrams = create_ngrams(data.cpu(), n-1)
-    raw_counts = index.batch_count_next(ngrams.reshape(-1, n-1).numpy(), vocab_size)
+    raw_counts = index.batch_count_next(ngrams.reshape(-1, n-1).numpy())
     return np.array(raw_counts, dtype=np.float32)
 
 
@@ -40,7 +40,7 @@ def main():
     tokens_path = Path('/mnt/ssd-1/pile-ngrams-tokens')
     paths = [(str(sa_fp), str(t_fp)) for sa_fp, t_fp in zip(sorted(tokens_path.iterdir()), sorted(sa_path.glob('*.idx')))]
 
-    index = ShardedMemmapIndex(paths)
+    index = ShardedMemmapIndex(paths, vocab=vocab_size)
 
     for i in range(1, num_batches):
         batch_dir = data_dir / f'{i}'
@@ -49,7 +49,7 @@ def main():
         np.save(batch_dir / 'tokens.npy', data.numpy())
         for n in tqdm(ngram_values):
             print('#' * 30)
-            counts = get_ngram_counts(index, data, n, vocab_size)
+            counts = get_ngram_counts(index, data, n)
             np.save(batch_dir / f'{n}.npy', counts)
 
 
