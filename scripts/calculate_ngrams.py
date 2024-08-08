@@ -12,20 +12,12 @@ vocab_size = 50_304
 batch_size = 128
 block_size = 512
 
+
+
 def get_batch():
     # We recreate np.memmap every batch to avoid a memory leak, as per
     # https://stackoverflow.com/questions/45132940/numpy-memmap-memory-usage-want-to-iterate-once/61472122#61472122
     i = randint(0, 20)
-    data = np.memmap(f'/mnt/ssd-1/pile-ngrams-tokens/document-{i:05}-of-00020.bin', dtype=np.uint16, mode='r')
-    ix = torch.randint(len(data) - block_size, (batch_size,))
-    x = np.stack([data[i:i+block_size].astype(np.int64) for i in ix])
-    return x
-
-
-def get_batch():
-    # We recreate np.memmap every batch to avoid a memory leak, as per
-    # https://stackoverflow.com/questions/45132940/numpy-memmap-memory-usage-want-to-iterate-once/61472122#61472122
-    i = torch.randint(0, 20)
     data = np.memmap(f'/mnt/ssd-1/pile-ngrams-tokens/document-{i:05}-of-00020.bin', dtype=np.uint16, mode='r')    
     ix = torch.randint(len(data) - block_size, (batch_size,))
     x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
