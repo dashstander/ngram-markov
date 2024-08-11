@@ -1,17 +1,17 @@
-from ngram_markov.ngrams import kl_divergence, create_ngrams
+from ngram_markov.ngrams import create_ngrams
 from random import randint
 from tokengrams import ShardedMemmapIndex
 from pathlib import Path
 import numpy as np
+from scipy import sparse
 from tqdm import tqdm
 import torch
 
-ngram_values = range(2, 20)
+ngram_values = range(2, 21)
 vocab_size = 50_304
 
 batch_size = 128
 block_size = 512
-
 
 
 def get_batch():
@@ -27,8 +27,7 @@ def get_batch():
 def get_ngram_counts(index, data, n):
     ngrams = create_ngrams(data.cpu(), n-1)
     raw_counts = index.batch_count_next(ngrams.reshape(-1, n-1).numpy())
-    return np.array(raw_counts, dtype=np.float32)
-
+    return sparse.csr_array(raw_counts, dtype=np.float32)
 
 
 def main():
@@ -50,7 +49,7 @@ def main():
         for n in tqdm(ngram_values):
             print('#' * 30)
             counts = get_ngram_counts(index, data, n)
-            np.save(batch_dir / f'{n}.npy', counts)
+            sparse.save_npz(batch_dir / f'{n}.npz', counts)
 
 
 if __name__ == '__main__':
