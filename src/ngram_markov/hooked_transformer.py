@@ -773,6 +773,7 @@ class HookedTransformer(HookedRootModule):
                     past_kv_cache_entry=past_kv_cache[i] if past_kv_cache is not None else None,
                     shortformer_pos_embed=shortformer_pos_embed,
                     attention_mask=attention_mask,
+                    additive_attention_mask=additive_attention_mask
                 )  # [batch, pos, d_model]
 
             if stop_at_layer is not None:
