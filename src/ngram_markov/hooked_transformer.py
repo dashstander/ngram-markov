@@ -35,6 +35,7 @@ from transformer_lens.components import (
     RMSNorm,
     RMSNormPre,
 )
+from transformer_lens.factories.mlp_factory import MLPFactory
 from transformer_lens.components.mlps.can_be_used_as_mlp import CanBeUsedAsMLP
 import transformer_lens.loading_from_pretrained as loading
 import transformer_lens.utils as utils
