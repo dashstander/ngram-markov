@@ -170,7 +170,7 @@ class TransformerBlock(nn.Module):
         shortformer_pos_embed: Optional[Float[torch.Tensor, "batch pos d_model"]] = None,
         past_kv_cache_entry: Optional[HookedTransformerKeyValueCacheEntry] = None,
         attention_mask: Optional[Int[torch.Tensor, "batch offset_pos"]] = None,
-        additive_attention_mask: Optional = None
+        additive_attention_mask: Optional[torch.Tensor] = None
     ) -> Float[torch.Tensor, "batch pos d_model"]:
         """A single Transformer block.
 
@@ -577,6 +577,7 @@ class HookedTransformer(HookedRootModule):
         tokens: Optional[Int[torch.Tensor, "batch pos"]] = None,
         shortformer_pos_embed: Optional[Float[torch.Tensor, "batch pos d_model"]] = None,
         attention_mask: Optional[torch.Tensor] = None,  # [batch pos]
+        additive_attention_mask: Optional[torch.Tensor] = None,
         stop_at_layer: Optional[int] = None,
         past_kv_cache: Optional[HookedTransformerKeyValueCache] = None,
     ) -> Loss:
@@ -594,6 +595,7 @@ class HookedTransformer(HookedRootModule):
         tokens: Optional[Int[torch.Tensor, "batch pos"]] = None,
         shortformer_pos_embed: Optional[Float[torch.Tensor, "batch pos d_model"]] = None,
         attention_mask: Optional[torch.Tensor] = None,  # [batch pos]
+        additive_attention_mask: Optional[torch.Tensor] = None,
         stop_at_layer: Optional[int] = None,
         past_kv_cache: Optional[HookedTransformerKeyValueCache] = None,
     ) -> Loss:
@@ -611,6 +613,7 @@ class HookedTransformer(HookedRootModule):
         tokens: Optional[Int[torch.Tensor, "batch pos"]] = None,
         shortformer_pos_embed: Optional[Float[torch.Tensor, "batch pos d_model"]] = None,
         attention_mask: Optional[torch.Tensor] = None,  # [batch pos]
+        additive_attention_mask: Optional[torch.Tensor] = None,
         stop_at_layer: Optional[int] = None,
         past_kv_cache: Optional[HookedTransformerKeyValueCache] = None,
     ) -> Tuple[Float[torch.Tensor, "batch pos d_vocab"], Loss]:
@@ -628,6 +631,7 @@ class HookedTransformer(HookedRootModule):
         tokens: Optional[Int[torch.Tensor, "batch pos"]] = None,
         shortformer_pos_embed: Optional[Float[torch.Tensor, "batch pos d_model"]] = None,
         attention_mask: Optional[torch.Tensor] = None,  # [batch pos]
+        additive_attention_mask: Optional[torch.Tensor] = None,
         stop_at_layer: Optional[int] = None,
         past_kv_cache: Optional[HookedTransformerKeyValueCache] = None,
     ) -> None:
@@ -649,6 +653,7 @@ class HookedTransformer(HookedRootModule):
         tokens: Optional[Int[torch.Tensor, "batch pos"]] = None,
         shortformer_pos_embed: Optional[Float[torch.Tensor, "batch pos d_model"]] = None,
         attention_mask: Optional[torch.Tensor] = None,  # [batch pos]
+        additive_attention_mask: Optional[torch.Tensor] = None,
         stop_at_layer: Optional[int] = None,
         past_kv_cache: Optional[HookedTransformerKeyValueCache] = None,
     ) -> Union[
