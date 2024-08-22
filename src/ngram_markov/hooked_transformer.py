@@ -219,6 +219,10 @@ class TransformerBlock(nn.Module):
             key_input = attn_in
             value_input = attn_in
 
+        if additive_attention_mask is not None:
+            print("Using mask!")
+            print(additive_attention_mask.shape)
+
         attn_out = (
             # hook the residual stream states that are used to calculate the
             # queries, keys and values, independently.
