@@ -152,6 +152,36 @@ def convert_nanogpt_weights(old_state_dict, cfg: HookedTransformerConfig):
     return new_state_dict
 
 
+import torch
+
+def create_local_attention_mask(seq_len: int, window_size: int, batch_size: int = 1, device='cpu') -> torch.Tensor:
+    """
+    Creates a mask for local attention where each token can only attend to
+    the previous window_size tokens and itself, while maintaining causality.
+    
+    Args:
+    seq_len (int): The sequence length.
+    window_size (int): The number of previous tokens to attend to.
+    batch_size (int): The batch size.
+    
+    Returns:
+    torch.Tensor: A boolean mask of shape (batch_size, 1, seq_len, seq_len).
+    """
+    # Create a causal mask
+    causal_mask = torch.tril(torch.ones(seq_len, seq_len))
+    
+    # Create a local attention mask
+    local_mask = torch.triu(torch.ones(seq_len, seq_len), diagonal=1-window_size)
+    
+    # Combine causal and local masks
+    mask = causal_mask * local_mask
+    
+    # Add batch and head dimensions
+    mask = mask.unsqueeze(0).unsqueeze(0).expand(batch_size, 1, seq_len, seq_len)
+    mask = torch.logical_not(mask).float().masked_fill(mask == 0, float('-inf'))
+    
+    return mask.to(device)
+
 
 def save_to_s3(fs, weights, optimizer, config, rng, bucket, step):
     with fs.open(f'{bucket}/{step}.pth', mode='wb') as file:
