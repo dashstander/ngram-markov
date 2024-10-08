@@ -50,7 +50,7 @@ if __name__ == '__main__':
         end_idx = min((i + 1) * batch_size, total_ngrams)
         mm_array[start_idx:end_idx] = outs
 
-        if i % 10 == 0:
+        if i % 50 == 0:
             mm_array.flush()
     
     mm_array.flush()
