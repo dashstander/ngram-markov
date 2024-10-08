@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     # Calculate the number of batches
     num_batches = (total_ngrams + batch_size - 1) // batch_size
-    for i, ngrams in tqdm(ngram_iterator(n, num_tokens, batch_size, device)):
+    for i, ngrams in tqdm(ngram_iterator(n, num_tokens, batch_size, device), total=num_batches):
         outs = calculate_model_ngrams(model, ngrams)
         start_idx = i * batch_size
         end_idx = min((i + 1) * batch_size, total_ngrams)
