@@ -24,7 +24,7 @@ def ngram_iterator(n: int, num_tokens: int, batch_size: int, device):
 
 @torch.no_grad
 def calculate_model_ngrams(model, data):
-    return model(data).to('cpu').numpy()
+    return model(data)[:, -1, :].to('cpu').numpy()
 
 
 if __name__ == '__main__':
