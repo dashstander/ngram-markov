@@ -34,11 +34,11 @@ if __name__ == '__main__':
     batch_size = 2 ** 17
     device = 'cuda:0'
     model_path = Path('/media/External01/ngram-checkpoints/4layer_tinystories')
-    output_path = Path('/media/External01/model-ngram-outputs')
-    output_path.mkdir(parents=True, exist_ok=True)
+    #output_path = Path('/media/External01/model-ngram-outputs')
+    #output_path.mkdir(parents=True, exist_ok=True)
     model = load_tl_model(model_path / f'ckpt{epoch}.pt')
     model.eval()
-    output_file = output_path / f'ngram_{n}_outputs_epoch_{epoch}.npy'
+    output_file = Path(f'ngram_{n}_outputs_epoch_{epoch}.npy')
 
     # Create a memory-mapped 3D numpy array
     mm_array = np.memmap(output_file, dtype='float32', mode='w+', shape=(num_tokens, num_tokens, num_tokens, num_tokens))
