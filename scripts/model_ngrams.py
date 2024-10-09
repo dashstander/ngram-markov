@@ -22,7 +22,7 @@ def ngram_iterator(n: int, num_tokens: int, batch_size: int, device):
         yield i, batch.to(device, non_blocking=True)
 
 
-@torch.no_grad
+@torch.no_grad()
 def calculate_model_ngrams(model, data):
     return model(data)[:, -1, :].to('cpu').numpy()
 
@@ -39,16 +39,24 @@ if __name__ == '__main__':
     model = load_tl_model(model_path / f'ckpt{epoch}.pt')
     model.eval()
     output_file = output_path / f'ngram_{n}_outputs_epoch_{epoch}.npy'
-    total_ngrams = num_tokens ** n
-    mm_array = np.memmap(output_file, dtype='float32', mode='w+', shape=(total_ngrams, num_tokens))
+
+    # Create a memory-mapped 3D numpy array
+    mm_array = np.memmap(output_file, dtype='float32', mode='w+', shape=(num_tokens, num_tokens, num_tokens, num_tokens))
 
     # Calculate the number of batches
+    total_ngrams = num_tokens ** n
     num_batches = (total_ngrams + batch_size - 1) // batch_size
+
     for i, ngrams in tqdm(ngram_iterator(n, num_tokens, batch_size, device), total=num_batches):
         outs = calculate_model_ngrams(model, ngrams)
-        start_idx = i * batch_size
-        end_idx = min((i + 1) * batch_size, total_ngrams)
-        mm_array[start_idx:end_idx] = outs
+        
+        # Convert batch indices to 3D indices
+        idx0 = ngrams[:, 0].cpu().numpy()
+        idx1 = ngrams[:, 1].cpu().numpy()
+        idx2 = ngrams[:, 2].cpu().numpy()
+        
+        # Write to the 3D array
+        mm_array[idx0, idx1, idx2] = outs
 
         if i % 50 == 0:
             mm_array.flush()
@@ -59,10 +67,8 @@ if __name__ == '__main__':
 
     # Verification step
     print("Verifying data...")
-    mm_array_verify = np.memmap(output_file, dtype='float32', mode='r', shape=(total_ngrams, num_tokens))
+    mm_array_verify = np.memmap(output_file, dtype='float32', mode='r', shape=(num_tokens, num_tokens, num_tokens, num_tokens))
     print(f"Shape of saved array: {mm_array_verify.shape}")
     print(f"Sum of all elements: {np.sum(mm_array_verify)}")
     print(f"Mean of all elements: {np.mean(mm_array_verify)}")
-    print(f"First few elements:\n{mm_array_verify[:5, :5]}")
-
-
+    print(f"First few elements:\n{mm_array_verify[0, 0, 0, :5]}")
