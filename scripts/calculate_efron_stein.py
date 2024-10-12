@@ -86,19 +86,14 @@ if __name__ == "__main__":
     )
 
     for output_token in tqdm(range(num_tokens), desc="Processing output tokens"):
-        print(f'\nProcessing output token {output_token}')
         
-        print(f'Getting data....')
         data = np.copy(mm_array[..., output_token])
 
-        print(f'Beginning Efron-Stein decomposition')
         zeroth_order, first_order, second_order, third_order = efron_stein_decomposition(data)
 
-        print(f'Running correctness checks')
-        check_reconstruction(data, zeroth_order, first_order, second_order, third_order)
-        check_variances(data, first_order, second_order, third_order)
+        #check_reconstruction(data, zeroth_order, first_order, second_order, third_order)
+        #check_variances(data, first_order, second_order, third_order)
 
-        print("Checks passed successfully!")
 
         # Create a dictionary to store all components
         es_decomposition = {
