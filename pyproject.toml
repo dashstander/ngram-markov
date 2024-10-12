@@ -29,6 +29,7 @@ dependencies = [
     "networkx>=3.3",
     "transformer-lens @ git+https://github.com/TransformerLensOrg/TransformerLens.git",
     "nnsight>=0.2.21",
+    "tensordict>=0.5.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
